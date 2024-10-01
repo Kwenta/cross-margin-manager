@@ -119,7 +119,7 @@ contract AccountTest is Test, ConsolidatedEvents {
     //////////////////////////////////////////////////////////////*/
 
     function test_GetVersion() public view {
-        assert(account.VERSION() == "2.1.4");
+        assert(account.VERSION() == "2.1.5");
     }
 
     function test_GetTrackingCode() public view {

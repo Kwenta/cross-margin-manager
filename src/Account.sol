@@ -39,7 +39,7 @@ contract Account is IAccount, Auth, OpsReady {
     //////////////////////////////////////////////////////////////*/
 
     /// @inheritdoc IAccount
-    bytes32 public constant VERSION = "2.1.4";
+    bytes32 public constant VERSION = "2.1.5";
 
     /// @notice tracking code used when modifying positions
     bytes32 internal constant TRACKING_CODE = "KWENTA";
@@ -617,6 +617,23 @@ contract Account is IAccount, Auth, OpsReady {
         IPerpsV2MarketConsolidated(_market).transferMargin(_amount);
     }
 
+    /// @notice deposit/withdraw margin to/from a Synthetix PerpsV2 Market
+    /// @param _market: address of market
+    /// @param _amount: amount of margin to deposit/withdraw
+    function _perpsV2ModifyMarginNoExternalRevert(
+        address _market,
+        int256 _amount
+    ) internal returns (bool) {
+        if (_amount > 0) {
+            _sufficientMargin(_amount);
+        }
+        try IPerpsV2MarketConsolidated(_market).transferMargin(_amount) {
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     /// @notice withdraw margin from market back to this account
     /// @dev this will *not* fail if market has zero margin
     function _perpsV2WithdrawAllMargin(address _market) internal {
@@ -657,7 +674,11 @@ contract Account is IAccount, Auth, OpsReady {
 
                 /// @dev this will revert if market does not
                 /// have sufficient available margin
-                _perpsV2ModifyMargin(_market, -int256(difference));
+                bool success = _perpsV2ModifyMarginNoExternalRevert(
+                    _market, -int256(difference)
+                );
+                /// @dev breakout of fee impose if market reverts (max leverage scenario)
+                if (!success) return;
             }
 
             // impose fee on account from account margin
@@ -942,7 +963,7 @@ contract Account is IAccount, Auth, OpsReady {
             execAddress: address(this),
             execData: abi.encodeCall(
                 this.executeConditionalOrder, conditionalOrderId
-                ),
+            ),
             moduleData: moduleData,
             feeToken: ETH
         });

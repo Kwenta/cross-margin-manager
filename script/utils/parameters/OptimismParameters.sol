@@ -4,8 +4,8 @@ pragma solidity 0.8.18;
 /// @dev for Synthetix addresses see:
 /// https://github.com/Synthetixio/synthetix-docs/blob/master/content/addresses.md#mainnet-optimism-l2
 
-// v2.1.3 deployer
-address constant OPTIMISM_DEPLOYER = 0x12d970154Ac171293323f20757130d5731850deB;
+// v2.1.5 deployer
+address constant OPTIMISM_DEPLOYER = 0x264bF33f2442001dC6bE0c3FC777df5495b8A5e7;
 
 address constant OPTIMISM_PDAO = 0xe826d43961a87fBE71C91d9B73F7ef9b16721C07;
 
@@ -16,9 +16,9 @@ address constant OPTIMISM_GELATO = 0x01051113D81D7d6DA508462F2ad6d7fD96cF42Ef;
 
 address constant OPTIMISM_OPS = 0x340759c8346A1E6Ed92035FB8B6ec57cE1D82c2c;
 
-// v2.1.4
+// v2.1.5
 address constant OPTIMISM_IMPLEMENTATION =
-    0x0f716Fc517955863824CD9317603E4795EDfffb4;
+    0xbada5ec9fa0568e0cd9D252a0744E6b6b52E438C;
 
 // released with v2.1.4 implementation (used by v2.1.*)
 address constant OPTIMISM_EVENTS = 0x6B32d15a6Cb77ea227A6Fb19532b2de542c45AC6;

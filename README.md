@@ -178,12 +178,15 @@ forge test --fork-url $(grep ARCHIVE_NODE_URL_L2 .env | cut -d '=' -f2) --match-
 8. Call `Factory.upgradeAccountImplementation` with new `Account` address (can be done on etherscan)
 > Only factory owner can do this
 9. Update `./deploy-addresses/optimism-goerli.json` with new `Account` address
-10. Ensure testnet accounts are updated and functional (ensure state is correct)
-11. Run script and deploy to Mainnet
-12. Call `Factory.upgradeAccountImplementation` with new `Account` address (can be done on etherscan)
+10. Update `utils/parameters/OptimismGoerliParameters.sol`  with new `Account` address
+11. Ensure testnet accounts are updated and functional (ensure state is correct)
+12. Run script and deploy to Mainnet
+13. Call `Factory.upgradeAccountImplementation` with new `Account` address (can be done on etherscan)
 > Only factory owner can do this (pDAO)
-13. Update `./deploy-addresses/optimism.json` with new `Account` address
-14. Ensure mainnet accounts are updated and functional (ensure state is correct)
+14. Update `./deploy-addresses/optimism.json` with new `Account` address
+15. Update `utils/parameters/OptimismParameters.sol`  with new `Account` address
+16. Double-check and update any other fields necessary on Parameters constant file. (for example if there is a new deployer address)
+17. Ensure mainnet accounts are updated and functional (ensure state is correct)
 
 ## External Conditional Order Executors
 > As of SM v2.1.0, public actors can execute conditional orders and receive a fee for doing so
