@@ -410,6 +410,113 @@ contract OrderFlowFeeTest is Test, ConsolidatedEvents {
         assertEq(treasuryPreBalance, treasuryPostBalance);
     }
 
+    /// Verifies that transaction does not revert and charges a fee if there is sufficient margin to cover for orderFlowFee
+    /// @dev Synthetix makes transaction reverts if the resulting position is too large, outside the max leverage, or is liquidating.
+    function test_imposeOrderFlowFee_on_valid_close() public {
+        uint256 treasuryPreBalance = sUSD.balanceOf(settings.TREASURY());
+
+        /// @dev Ensures first trade doesn't charge a fee
+        uint256 testOrderFlowFee = 0; // 0%
+        settings.setOrderFlowFee(testOrderFlowFee);
+
+        // create a long position in the ETH market
+        address market = getMarketAddressFromKey(sETHPERP);
+
+        /// Deposit all margin so that account has no margin to cover orderFlowFee
+        int256 marginDelta = int256(AMOUNT); // 10_000 dollars
+        int256 sizeDelta = 5 ether; // ~ Estimated notional $9,396.3052993
+        // Leverage is .94x
+
+        (uint256 desiredFillPrice,) =
+            IPerpsV2MarketConsolidated(market).assetPrice();
+
+        submitAtomicOrder(sETHPERP, marginDelta, sizeDelta, desiredFillPrice);
+
+        // Margin after fees charged: ~ $7182.31
+
+        // Set orderflow fee high to easily test that transaction fails if neither account or market has sufficient margin to cover for fees
+        testOrderFlowFee = 10_000; // 10%
+        settings.setOrderFlowFee(testOrderFlowFee);
+
+        // Fee is 90% of notional = $936 fee
+        // Margin would be 7182.31 - 936 = 6246.31
+        // Remaining leverage is 1.5x
+        // Resulting in valid fee charge
+
+        // define close position order
+        IAccount.Command[] memory commands = new IAccount.Command[](1);
+        commands[0] = IAccount.Command.PERPS_V2_CLOSE_POSITION;
+        bytes[] memory inputs = new bytes[](1);
+        desiredFillPrice -= 1 ether;
+        inputs[0] = abi.encode(market, desiredFillPrice);
+
+        // close position
+        account.execute(commands, inputs);
+
+        // Assert position is closed
+        IPerpsV2MarketConsolidated.Position memory position = 
+            account.getPosition(sETHPERP);
+        assertEq(0, position.size);
+
+        uint256 treasuryPostBalance = sUSD.balanceOf(settings.TREASURY());
+
+        // Assert treasury balance is now greater than before
+        assertLt(treasuryPreBalance, treasuryPostBalance);
+    }
+
+    /// Verifies that transaction does not revert and does not charge a fee if Synthetix trade reverts (due to max leverage etc..)
+    /// @dev Synthetix makes transaction reverts if the resulting position is too large, outside the max leverage, or is liquidating.
+    function test_imposeOrderFlowFee_market_revert_bypass() public {
+        uint256 treasuryPreBalance = sUSD.balanceOf(settings.TREASURY());
+
+        /// @dev Ensures first trade doesn't charge a fee
+        uint256 testOrderFlowFee = 0; // 0%
+        settings.setOrderFlowFee(testOrderFlowFee);
+
+        // create a long position in the ETH market
+        address market = getMarketAddressFromKey(sETHPERP);
+
+        /// Deposit all margin so that account has no margin to cover orderFlowFee
+        int256 marginDelta = int256(AMOUNT); // 10_000 dollars
+        int256 sizeDelta = 5 ether; // ~ Estimated notional $9,396.3052993
+        // Leverage is .94x
+
+        (uint256 desiredFillPrice,) =
+            IPerpsV2MarketConsolidated(market).assetPrice();
+
+        submitAtomicOrder(sETHPERP, marginDelta, sizeDelta, desiredFillPrice);
+
+        // Margin after fees charged: ~ $7182.31
+
+        // Set orderflow fee high to easily test that transaction fails if neither account or market has sufficient margin to cover for fees
+        testOrderFlowFee = 75_000; // 75%
+        settings.setOrderFlowFee(testOrderFlowFee);
+
+        // Fee is 75% of notional = $7,047 fee
+        // Margin would be $7182.31 - $7,047 = $135.31
+        // Resulting in 69x leverage
+
+        // define close position order
+        IAccount.Command[] memory commands = new IAccount.Command[](1);
+        commands[0] = IAccount.Command.PERPS_V2_CLOSE_POSITION;
+        bytes[] memory inputs = new bytes[](1);
+        desiredFillPrice -= 1 ether;
+        inputs[0] = abi.encode(market, desiredFillPrice);
+
+        // close position
+        account.execute(commands, inputs);
+
+        // Assert position is closed
+        IPerpsV2MarketConsolidated.Position memory position = 
+            account.getPosition(sETHPERP);
+        assertEq(0, position.size);
+
+        uint256 treasuryPostBalance = sUSD.balanceOf(settings.TREASURY());
+
+        // Assert that no overflowfee was distributed
+        assertEq(treasuryPreBalance, treasuryPostBalance);
+    }
+
     /// Verifies that the correct Event is emitted with correct fee value
     function test_imposeOrderFlowFee_event() public {
         // create a long position in the ETH market
