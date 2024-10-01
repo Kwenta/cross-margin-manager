@@ -61,7 +61,7 @@ contract UpgradeTest is Test {
     function setUp() public {
         vm.rollFork(BLOCK_NUMBER_UPGRADE);
 
-        // create active v2.1.3 account
+        // create active v2.1.4 account
         activeAccount = initAccountForStateTesting();
 
         // define Setup contract used for upgrades
@@ -102,7 +102,7 @@ contract UpgradeTest is Test {
         assertEq(version, "2.1.4", "wrong version");
     }
 
-    function test_Upgrade_v2_1_4() public {
+    function test_Upgrade_v2_1_5() public {
         /**
          * RECORD ALL STATE PRIOR TO UPGRADE
          */
@@ -157,7 +157,7 @@ contract UpgradeTest is Test {
          */
         (, response) = activeAccount.call(abi.encodeWithSignature("VERSION()"));
         (bytes32 version) = abi.decode(response, (bytes32));
-        assert(version != "2.1.3");
+        assert(version == "2.1.5");
 
         /**
          * CHECK STATE DID NOT CHANGE
