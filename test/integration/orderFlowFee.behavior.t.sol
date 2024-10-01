@@ -454,7 +454,7 @@ contract OrderFlowFeeTest is Test, ConsolidatedEvents {
         account.execute(commands, inputs);
 
         // Assert position is closed
-        IPerpsV2MarketConsolidated.Position memory position = 
+        IPerpsV2MarketConsolidated.Position memory position =
             account.getPosition(sETHPERP);
         assertEq(0, position.size);
 
@@ -507,7 +507,7 @@ contract OrderFlowFeeTest is Test, ConsolidatedEvents {
         account.execute(commands, inputs);
 
         // Assert position is closed
-        IPerpsV2MarketConsolidated.Position memory position = 
+        IPerpsV2MarketConsolidated.Position memory position =
             account.getPosition(sETHPERP);
         assertEq(0, position.size);
 

@@ -620,7 +620,10 @@ contract Account is IAccount, Auth, OpsReady {
     /// @notice deposit/withdraw margin to/from a Synthetix PerpsV2 Market
     /// @param _market: address of market
     /// @param _amount: amount of margin to deposit/withdraw
-    function _perpsV2ModifyMarginNoExternalRevert(address _market, int256 _amount) internal returns (bool) {
+    function _perpsV2ModifyMarginNoExternalRevert(
+        address _market,
+        int256 _amount
+    ) internal returns (bool) {
         if (_amount > 0) {
             _sufficientMargin(_amount);
         }
@@ -671,7 +674,9 @@ contract Account is IAccount, Auth, OpsReady {
 
                 /// @dev this will revert if market does not
                 /// have sufficient available margin
-                bool success = _perpsV2ModifyMarginNoExternalRevert(_market, -int256(difference));
+                bool success = _perpsV2ModifyMarginNoExternalRevert(
+                    _market, -int256(difference)
+                );
                 /// @dev breakout of fee impose if market reverts (max leverage scenario)
                 if (!success) return;
             }
@@ -958,7 +963,7 @@ contract Account is IAccount, Auth, OpsReady {
             execAddress: address(this),
             execData: abi.encodeCall(
                 this.executeConditionalOrder, conditionalOrderId
-                ),
+            ),
             moduleData: moduleData,
             feeToken: ETH
         });
